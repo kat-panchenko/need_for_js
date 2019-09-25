@@ -43,6 +43,9 @@ function getQuantityElements(heightElem) {
 //функция старта игры
 function startGame() {
     start.classList.add('hide');
+    //отчистка поля игры и очков для того чтобы игра смогла начаться снова
+    gameArea.innerHTML = '';
+
 // цикл линий на дороге иммитирующих движение
     for (let i = 0; i < getQuantityElements(75) + 1; i++) {
         const line = document.createElement('div');
@@ -68,8 +71,14 @@ function startGame() {
         gameArea.appendChild(enemy);//добавляем элемент машинок в игровую зону
     }
 
+    setting.score = 0;
     setting.start = true;
-    gameArea.appendChild(car); //добавили машинку в игровое поле
+    //добавили машинку в игровое поле
+    gameArea.appendChild(car);
+    //параметры оазмещения машинки
+    car.style.left = '125px';
+    car.style.top = 'auto';
+    car.style.bottom = '10px';
 
     //добавление музыки на фоне игры
     gameArea.appendChild(music);
@@ -81,10 +90,6 @@ function startGame() {
     setting.x = car.offsetLeft;
     setting.y = car.offsetTop;
     requestAnimationFrame(playGame); //современная способ анимации функции вместо setTimeout
-
-    /*setTimeout(function () {
-        setting.start = false;
-    }, 10000);*/
 }
 
 //функции нажатия кнопок
@@ -106,6 +111,10 @@ function stopRun(event) {
 //функция начала игры
 function playGame() {
     if (setting.start) {
+        //увеличение очков в зависимости от скорости
+        setting.score += setting.speed;
+        //вывод очков на страницу
+        score.innerHTML = 'SCORE</br>' +setting.score;
         moveRoad();
         moveEnemy();
         if (keys.ArrowLeft && setting.x > 0) {
@@ -123,9 +132,9 @@ function playGame() {
         car.style.left = setting.x + 'px';
         car.style.top = setting.y + 'px';
         requestAnimationFrame(playGame); //рекурсия
-    } /*else {
+    } else {
         music.remove();
-    }*/
+    }
 }
 
 //функция движения дороги и ее разметки
@@ -147,6 +156,18 @@ function moveRoad() {
 function moveEnemy() {
     let enemies = document.querySelectorAll('.enemy');
     enemies.forEach(function (enemy) {
+//получаем с помощью спец.метода все стороны обьектов в массив
+        let carRect = car.getBoundingClientRect();
+        let enemyRect = enemy.getBoundingClientRect();
+//определение стыков сторон при которых игра будет окончена из-за столкновения
+        if (carRect.top <= enemyRect.bottom && carRect.right >= enemyRect.left &&
+            carRect.left <= enemyRect.right && carRect.bottom >= enemyRect.top) {
+        setting.start = false;
+        //вывод очков и после него кнопка старта игры заново
+        start.classList.remove('hide');
+        start.style.top = score.offsetHeight;
+        }
+
         enemy.y += setting.speed / 2;
         enemy.style.top = enemy.y + 'px';
 

@@ -3,9 +3,14 @@
 }
 
 .start {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  z-index: 200;
   padding: 20px;
+  margin: 0;
   background-color: black;
-  border-radius: 30px;
   color: #f9f6ff;
   font-size: 20px;
   text-transform: uppercase;
@@ -48,4 +53,21 @@
 .music {
   position: absolute;
   top: -200px;
+}
+
+.score {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: black;
+  padding: .8rem 0;
+  z-index: 200;
+  margin: 0;
+  color: yellow;
+  font-size: 20px;
+  text-transform: uppercase;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
 }
