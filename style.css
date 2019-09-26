@@ -1,8 +1,11 @@
-.hide {
-  display: none;
+.start.hide {
+  display: none !important;
 }
 
 .start {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   position: absolute;
   left: 0;
   top: 0;
@@ -12,19 +15,32 @@
   margin: 0;
   background-color: black;
   color: #f9f6ff;
-  font-size: 20px;
+  font-size: 18px;
   text-transform: uppercase;
   text-align: center;
   font-family: Arial, sans-serif;
+}
+
+.start > div {
+  margin: 0 10px;
+  border: 2px dotted white;
+  border-radius: 10px;
+  padding: 6px;
   cursor: pointer;
 }
-.start:hover {
-  background-color: yellow;
-  color: black;
-  font-weight: bold;
+
+.start > div:hover {
+  color: yellow;
+  border: 2px dotted yellow;
+}
+
+.game {
+  display: flex;
+  height: 100%;
 }
 
 .game_area {
+  display: flex;
   width: 300px;
   height: 900px;
   position: relative;
@@ -70,4 +86,6 @@
   text-align: center;
   font-family: Arial, sans-serif;
   cursor: pointer;
+  border-bottom: 3px solid white;
 }
+

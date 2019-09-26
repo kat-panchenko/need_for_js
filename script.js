@@ -7,11 +7,17 @@ music = document.createElement(/*'audio'*/ 'embed');
 music.setAttribute('src', './audio/schoolboy.mp3');
 music.setAttribute('type', 'audio/mp3');
 music.classList.add('music');
+/*const music = new Audio('./audio/schoolboy.mp3');
+music.play();*/
 
 car.classList.add('car'); //добавили класс car элементу
 
+//запись рекорда в память браузера
+let topScore = localStorage.getItem('topScore');
+
 //оброботчик события старта игры на клик по элементу Старт
 start.addEventListener('click', startGame);
+
 
 //оброботчик событий при нажатии и отпускании кнопок-стрелок на клавиатуре
 document.addEventListener('keydown', startRun);
@@ -29,8 +35,9 @@ const keys = {
 const setting = {
     start: false, //состоянии игры на момент старта
     score: 0, //очки
-    speed: 3, //скорость машинки и дороги
-    traffic: 3 //сложность уровня по плотности трафика на дороге
+    speed: 5, //скорость машинки и дороги
+    traffic: 3, //сложность уровня по плотности трафика на дороге
+    level: 0
 };
 
 //
@@ -41,13 +48,31 @@ function getQuantityElements(heightElem) {
 }
 
 //функция старта игры
-function startGame() {
+function startGame(event) {
+
     start.classList.add('hide');
+    //event.target позволяет определить на каком конкретно элементе произошло событие
+    if (event.target.classList.contains('start')) {
+        return;
+    }
+    if (event.target.classList.contains('easy')) {
+        setting.speed = 3;
+        setting.traffic = 3;
+    }
+    if (event.target.classList.contains('medium')) {
+        setting.speed = 5;
+        setting.traffic = 4;
+    }
+    if (event.target.classList.contains('hard')) {
+        setting.speed = 7;
+        setting.traffic = 2;
+    }
+
     //отчистка поля игры и очков для того чтобы игра смогла начаться снова
     gameArea.innerHTML = '';
 
 // цикл линий на дороге иммитирующих движение
-    for (let i = 0; i < getQuantityElements(75) + 1; i++) {
+    for (let i = 0; i < getQuantityElements(75); i++) {
         const line = document.createElement('div');
         line.classList.add('line');
         line.style.top = (i * 75) + 'px';
@@ -110,27 +135,41 @@ function stopRun(event) {
 
 //функция начала игры
 function playGame() {
+
+    let a = 0;
+
+    if (setting.score > 2000 && setting.level === 0) {
+        ++setting.speed;
+        ++setting.level;
+    } else if (setting.score > 5500 && setting.level === 1) {
+        ++setting.speed;
+        ++setting.level;
+    } else if (setting.score > 10000 && setting.level === 2) {
+        ++setting.speed;
+        ++setting.level;
+    }
+
+    //увеличение очков в зависимости от скорости
+    setting.score += setting.speed;
+    //вывод очков на страницу
+    score.innerHTML = 'SCORE</br>' + setting.score;
+    moveRoad();
+    moveEnemy();
+    if (keys.ArrowLeft && setting.x > 0) {
+        setting.x -= setting.speed;
+    }
+    if (keys.ArrowRight && setting.x < (gameArea.offsetWidth - car.offsetWidth)) {
+        setting.x += setting.speed;
+    }
+    if (keys.ArrowUp && setting.y > 0) {
+        setting.y -= setting.speed;
+    }
+    if (keys.ArrowDown && setting.y < (gameArea.offsetHeight - car.offsetHeight)) {
+        setting.y += setting.speed;
+    }
+    car.style.left = setting.x + 'px';
+    car.style.top = setting.y + 'px';
     if (setting.start) {
-        //увеличение очков в зависимости от скорости
-        setting.score += setting.speed;
-        //вывод очков на страницу
-        score.innerHTML = 'SCORE</br>' +setting.score;
-        moveRoad();
-        moveEnemy();
-        if (keys.ArrowLeft && setting.x > 0) {
-            setting.x -= setting.speed;
-        }
-        if (keys.ArrowRight && setting.x < (gameArea.offsetWidth - car.offsetWidth)) {
-            setting.x += setting.speed;
-        }
-        if (keys.ArrowUp && setting.y > 0) {
-            setting.y -= setting.speed;
-        }
-        if (keys.ArrowDown && setting.y < (gameArea.offsetHeight - car.offsetHeight)) {
-            setting.y += setting.speed;
-        }
-        car.style.left = setting.x + 'px';
-        car.style.top = setting.y + 'px';
         requestAnimationFrame(playGame); //рекурсия
     } else {
         music.remove();
@@ -148,7 +187,6 @@ function moveRoad() {
         if (line.y >= gameArea.offsetHeight) {
             line.y = -75;
         }
-
     });
 }
 
@@ -160,20 +198,27 @@ function moveEnemy() {
         let carRect = car.getBoundingClientRect();
         let enemyRect = enemy.getBoundingClientRect();
 //определение стыков сторон при которых игра будет окончена из-за столкновения
-        if (carRect.top <= enemyRect.bottom && carRect.right >= enemyRect.left &&
-            carRect.left <= enemyRect.right && carRect.bottom >= enemyRect.top) {
-        setting.start = false;
-        //вывод очков и после него кнопка старта игры заново
-        start.classList.remove('hide');
-        start.style.top = score.offsetHeight;
+        if (carRect.top <= enemyRect.bottom - 5 && carRect.right >= enemyRect.left - 5 &&
+            carRect.left <= enemyRect.right - 5 && carRect.bottom - 5 >= enemyRect.top) {
+            setting.start = false;
+            //запись рекордных очков в память игры
+            if (topScore < setting.score) {
+                localStorage.setItem('topScore', setting.score);
+            }
+
+            //вывод очков и после него кнопка старта игры заново
+            start.classList.remove('hide');
+            start.style.top = score.offsetHeight;
         }
 
         enemy.y += setting.speed / 2;
         enemy.style.top = enemy.y + 'px';
 
         if (enemy.y >= gameArea.offsetHeight) {
+            let enemyImg = Math.floor(Math.random() * 5) + 1;
             enemy.y = -100 * setting.traffic;
             enemy.style.left = Math.floor((Math.random() * (gameArea.offsetWidth - 50))) + 'px';
+            enemy.style.background = `transparent url("./images/enemy${enemyImg}.png") center / cover no-repeat`;
         }
     });
 }
